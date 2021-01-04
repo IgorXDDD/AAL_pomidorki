@@ -4,6 +4,10 @@
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
+#define FIELD_SIZE 60000
+#define MAX_TOMATOE_COUNT 15000
+#define MAX_HEIGHT_WIDTH 10000
+
 
 class Generator
 {
@@ -29,7 +33,12 @@ private:
 public:
     Generator(int size, int count): field_size(size), tomatoes_count(count) {};
 
-    void generate()
+    void set_tomatoes_count(int count)
+    {
+        this->tomatoes_count = count;
+    }
+
+    field_type generate()
     {
         field.clear();
         field.reserve(tomatoes_count);
@@ -54,8 +63,12 @@ public:
             {
                 field.push_back(std::make_pair(tmp1,tmp2));
             }
+            else
+                continue;
+            
             k--;
         }
+        return field;
     }
 
     field_type get_field()
@@ -65,6 +78,15 @@ public:
 
     void print_cords()
     {
+        for(auto i = field.begin();i!=field.end();i++)
+        {
+            std::cout<<i->first<<" "<<i->second<<"\n";
+        }
+    }
+
+    void print_to_std()
+    {
+        std::cout<<field_size<<" "<<tomatoes_count<<std::endl;
         for(auto i = field.begin();i!=field.end();i++)
         {
             std::cout<<i->first<<" "<<i->second<<"\n";

@@ -1,69 +1,19 @@
-#include <iostream>
-#include "generator.hpp"
+#include "algorithm.hpp"
 #include <regex>
-#include <map>
-
-#include <unistd.h>
 
 
-
-#define SCENARIO_DEFAULT 0
-#define SCENARIO_ONE 1
-#define SCENARIO_TWO 2
-#define FIELD_SIZE 60000
 using namespace std;
 
 void switch_scenario(int scenario);
-void handle_argc(char **argc,int argv);
-void alg(const Generator::field_type & field,int n,int h, int w);
-
-int max(int a, int b)
-{
-    if(a>b)
-        return a;
-    return b;
-}
-int min(int a, int b)
-{
-    if(a<b)
-        return a;
-    return b;
-}
+int handle_argc(int argv, char **argc);
 
 int main(int argv, char* argc[])
 {
-
-    Generator gen(30000,14002);
-    gen.generate();
-    Generator::field_type pole;
-    pole = gen.get_field();
-    //handle_argc(argc,argv);
-    //gen.print_cords();
-    alg(pole,30000,1000,1000);
- 
+    handle_argc(argv,argc);
     return 0;
 }
 
-void switch_scenario(int scenario)
-{
-    switch (scenario)
-    {
-    case SCENARIO_DEFAULT:
-        /* code */
-        break;
-    case SCENARIO_ONE:
-        /* code */
-        break;
-    case SCENARIO_TWO:
-        /* code */
-        break;
-    default:
-        break;
-    }
-}
-
-
-void handle_argc(char **argc,int argv)
+int handle_argc(int argv, char **argc)
 {
     string arguments;
     for(int i=1;i<argv;i++)
@@ -73,90 +23,180 @@ void handle_argc(char **argc,int argv)
     }
 
     smatch match;
-    //m1 = podajemy standardowe wejscie i wywalamy na stdout
-    if(regex_search(arguments,match,regex("-m1\\s+")))
+    //          m1 = podajemy standardowe wejscie i wywalamy na stdout
+    if(regex_search(arguments,match,regex("-m1")))
     {
         cout<<"znaleziono -m1\n";
+        int h,k,n,w;
+        cin>>h;
+        cin>>w;
+        cin>>n;
+        cin>>k;
+        int x,y;
+        Generator::field_type field;
+        for(int i=0;i<k;i++)
+        {
+            cin>>x;
+            cin>>y;
+            field.push_back(make_pair(x,y));
+        }
+        // moze jeszcze byc taka sytuacja ze uzytkownik wybiera wlasne h oraz w
+        if(regex_search(arguments,match,regex("-h(\\d{1,6})")))
+            h=atoi(match.str(1).c_str());
+        if(regex_search(arguments,match,regex("-w(\\d{1,6})")))
+            w=atoi(match.str(1).c_str());
+
+        Algorithm tomatoe_search(k,n,h,w);
+        tomatoe_search.set_field(field);
+        tomatoe_search.run();
+        return 0;
     }
 
-    //m2 = tutaj podajemy 
-    else if (regex_search(arguments,match,regex("-m2\\s+-k(\\d{1,6})\\s+")))
+
+    //          m2 = tutaj generujemy
+    else if (regex_search(arguments,match,regex("-m2")))
     {
-        cout<<"znaleziono -m2: "<<match.str(0)<<endl;
-        cout<<match.str(1)<<endl;
+        bool all_data_found=true;
+        int h,w,n,k;
+        n=FIELD_SIZE;
+        if(regex_search(arguments,match,regex("-k(\\d{1,6})")))
+            k=atoi(match.str(1).c_str());
+        else
+            all_data_found=false;
+
+        if(regex_search(arguments,match,regex("-n(\\d{1,6})")))
+            n=atoi(match.str(1).c_str());
+
+        if(regex_search(arguments,match,regex("-h(\\d{1,6})")))
+            h=atoi(match.str(1).c_str());
+        else
+            all_data_found=false;
+
+        if(regex_search(arguments,match,regex("-w(\\d{1,6})")))
+            w=atoi(match.str(1).c_str());
+        else
+            all_data_found=false;
+
+        if(!all_data_found)
+        {
+            cerr<<"NIE PODANO WSZYSTKICH DANYCH!\n";
+            return -1;
+        }
+
+        //jezeli mamy wiecej pomidorkow niz pomiesci nasze pole
+        // albo plachte wieksza niz nasze pole
+        // albo plachta badz pole ma jakis wymiar rowny zero
+        if(k>(n*n) || h>n || w>n || n<=0 || h<=0 || w<=0)
+        {
+            cerr<<"BLENDE DANE!\n";
+            return -1;
+        }
+
+        Generator generator(n,k);
+        generator.generate();
+        Algorithm tomatoe_search(k,n,h,w);
+        tomatoe_search.set_field(generator.get_field());
+        cout<<"ZAJELO: "<<(double)(tomatoe_search.run().count()/1000000.0)<<" SEKUND"<<endl;
+        return 0;        
     }
-    else if (regex_search(arguments,match,regex("-m3\\s+-k(\\d{1,6})\\s+")))
+    //          m3 = przeprowadzamy benchmark
+    // k = poczatkowa liczba krzaczkow, zwiekszana przez step, maksymalnie r razy
+    // r = ile bedzie roznych instancji problemu
+    // step = o ile sie zwieksza liczba krzaczkow
+    // c = count, ile razy dla instancji problemu ma byc test
+    // h = wysokosc plachty
+    // w = szerokosc plachty
+    // n = rozmiar pola (najlepiej nie podawac)
+    else if (regex_search(arguments,match,regex("-m3")))
     {
-        cout<<"znaleziono -m3: "<<match.str(0)<<endl;
-        cout<<match.str(1)<<endl;
+        int step,r,c,n,k,h,w;
+        n=FIELD_SIZE;
+        bool all_data_found=true;
+        if(regex_search(arguments,match,regex("-k(\\d{1,6})")))
+            k=atoi(match.str(1).c_str());
+        else
+            all_data_found=false;
+
+        if(regex_search(arguments,match,regex("-step(\\d{1,5})")))
+            step=atoi(match.str(1).c_str());
+        else
+            all_data_found=false;
+
+        if(regex_search(arguments,match,regex("-r(\\d{1,2})")))
+            r=atoi(match.str(1).c_str());
+        else
+            all_data_found=false;
+
+        if(regex_search(arguments,match,regex("-c(\\d{1,2})")))
+            c=atoi(match.str(1).c_str());
+        else
+            all_data_found=false;
+
+        if(regex_search(arguments,match,regex("-h(\\d{1,6})")))
+            h=atoi(match.str(1).c_str());
+        else
+            all_data_found=false;
+        
+        if(regex_search(arguments,match,regex("-w(\\d{1,6})")))
+            w=atoi(match.str(1).c_str());
+        else
+            all_data_found=false;
+        
+        //dla n nie jest istotne zeby znalezc, powinnismy uzyc domyslnego n=60000
+        if(regex_search(arguments,match,regex("-n(\\d{1,6})")))
+            n=atoi(match.str(1).c_str());
+        
+        if(!all_data_found)
+        {
+            cerr<<"NIE PODANO WSZYSTKICH DANYCH!\n";
+            return -1;
+        }
+        if(h>n || w>n || n<=0 || h<=0 || w<=0)
+        {
+            cerr<<"BLENDE DANE!\n";
+            cout<<"h = "<<h<<endl;
+            cout<<"w = "<<w<<endl;
+            cout<<"n = "<<n<<endl;
+            cout<<"k = "<<k<<endl;
+            cout<<"step = "<<step<<endl;
+            cout<<"r = "<<r<<endl;
+            cout<<"c = "<<c<<endl;
+
+            return -1;
+        }
+        if(r<=0)
+            r=1;
+        if(c<=0)
+            c=1;
+        if(step<0)
+            step=0;
+        Algorithm tomatoe_search(n,k,h,w);
+        Generator gen(n,k);
+
+        for(int i=0; i<r; i++)
+        {
+            if(k+(i*step)>MAX_TOMATOE_COUNT)
+            {
+                cerr<<"Przekroczenie maksymalnego k!\n";
+                break;
+            }
+            //ustawiamy w generatorze ile ma byc pomidorkow
+            gen.set_tomatoes_count(k+(i*step));
+            //algorytmowi tez mowimy ile jest pomidorkow
+            tomatoe_search.setparams(k+(i*step),h,w);
+            cout<<"\t\tTestowanie dla k = "<<k+(i*step)<<", h = "<<h<<", w = "<<w<<endl;
+            for(int j=0; j<r; j++)
+            {
+                //pobieramy wspolrzedne pomidorkow wszystkich z genertatora (generujemy)
+                tomatoe_search.set_field(gen.generate());
+                //odpalamy alg 
+                cout<<j<<"-ta iteracja - ZAJELO: "<<(double)(tomatoe_search.run().count()/1000000.0)<<" SEKUND"<<endl;
+            }
+        }
     }
     else
     {
         cout<<"NIE ZNALEZIONO\n";
     }
     
-}
-
-void alg(const Generator::field_type &field,int n, int h, int w)
-{
-    map<uint16_t,vector<uint16_t>> nzpd;
-    //wrzucamy do wektora wszystkie
-    for(auto i = field.begin(); i != field.end(); i++)
-        nzpd[i->first].push_back(i->second);
-
-    pair<uint16_t,uint16_t> maxloc;
-    int maxsum=0,thissum=0;
-    //cout<<"DUPA"<<endl;
-    for(auto i = field.begin(); i != field.end(); i++)
-    {
-        vector<uint16_t> pointsright;
-        //16
-        pointsright.resize(n);
-
-        for(int j=max(i->first-(h-1), 0); j<min(i->first+h, n); j++)
-        {
-            int len=0;
-            //zliczamy te, ktore rozpoczynajac od punktu roboczego, bylyby pokryte przez plachte
-            if(nzpd.find(j) == nzpd.end())
-            {
-                //nie istnieje
-            }
-            else
-            {
-                for(int k=0; k<nzpd[j].size(); k++)
-                {
-                    if((i->second <= nzpd[j].at(k)) && (nzpd[j].at(k) <= (i->second+(w-1))))
-                    {
-                        len++;
-                    }
-                }
-            }
-            pointsright[j] = len;
-        }
-        //22
-        for(int j = (1-h); j<h; j++)
-        {
-            int sum=0;
-            int count=0;
-            for(int k = max(i->first+j,0); k<min(i->first+j+h,n); k++)// 300=n
-            {
-                // cout<<"CHCEMY UZYC: "<<k<<endl;
-                sum+=pointsright.at(k);
-                count++;
-            }
-            //cout<<"PRZESZLO: "<<count<<" RAZY\n";
-
-            if(sum>maxsum)
-            {
-                maxsum=sum;
-                maxloc.first=i->first;
-                maxloc.second=i->second;
-            }
-        }
-
-        //korekta jezeli poza granicami
-        maxloc.first = min(n-h,maxloc.first);
-        maxloc.second = min(n-w,maxloc.second);
-    }
-    cout<<"\nZnaleziono max dla: "<<maxloc.first<<","<<maxloc.second<<" i  wynosi: "<<maxsum<<endl;
 }
