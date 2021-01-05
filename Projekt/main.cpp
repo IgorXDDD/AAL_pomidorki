@@ -1,5 +1,7 @@
 #include "algorithm.hpp"
 #include <regex>
+#include <iomanip>
+#include <cstdio>
 
 
 using namespace std;
@@ -160,13 +162,13 @@ int handle_argc(int argv, char **argc)
         if(h>n || w>n || n<=0 || h<=0 || w<=0)
         {
             cerr<<"BLENDE DANE!\n";
-            cout<<"h = "<<h<<endl;
-            cout<<"w = "<<w<<endl;
-            cout<<"n = "<<n<<endl;
-            cout<<"k = "<<k<<endl;
-            cout<<"step = "<<step<<endl;
-            cout<<"r = "<<r<<endl;
-            cout<<"c = "<<c<<endl;
+            // cout<<"h = "<<h<<endl;
+            // cout<<"w = "<<w<<endl;
+            // cout<<"n = "<<n<<endl;
+            // cout<<"k = "<<k<<endl;
+            // cout<<"step = "<<step<<endl;
+            // cout<<"r = "<<r<<endl;
+            // cout<<"c = "<<c<<endl;
 
             return -1;
         }
@@ -179,6 +181,13 @@ int handle_argc(int argv, char **argc)
         Algorithm tomatoe_search(n,k,h,w);
         Generator gen(n,k);
 
+
+        cout<<"\t\tAlgorytm z asymptota O(k*h*w)\n";
+        cout<<"n"<<"\tk"<<"\th"<<"\tw"<<"\tczas"<<"\td(k*h*w)"<<"\td(czas)"<<"\tq"<<endl;
+        //printf("\tAlgorytm z asymptota O(k*h*w)\n");
+        
+        
+        //cout<<"n\tk\th\tw\tczas\tzloz\t\tcz_f\tzl_f\n";
         for(int i=0; i<r; i++)
         {
             if(k+(i*step)>MAX_TOMATOE_COUNT)
@@ -190,18 +199,29 @@ int handle_argc(int argv, char **argc)
             gen.set_tomatoes_count(k+(i*step));
             //algorytmowi tez mowimy ile jest pomidorkow
             tomatoe_search.setparams(k+(i*step),h,w);
-            cout<<"\t\tTestowanie dla k = "<<k+(i*step)<<", h = "<<h<<", w = "<<w<<endl;
-            for(int j=0; j<r; j++)
+            double recent_real =1.0;
+            double current_real =1.0;
+            double current_theory =1.0;
+            double recent_theory =(k+(i*step))*h*w;
+            for(int j=0; j<c; j++)
             {
                 //pobieramy wspolrzedne pomidorkow wszystkich z genertatora (generujemy)
                 tomatoe_search.set_field(gen.generate());
-                tomatoe_search.set_sheet(h+100*j,w+100*j);
+                tomatoe_search.set_sheet( (h+100*j)>n?n:(h+100*j), (w+100*j)>n?n:(w+100*j));
+                double duration = (double)(tomatoe_search.run()/1000000.0);
+                
                 //odpalamy alg 
-                cout<<j<<"-ta iteracja. h = "<<h+100*j<<", w = "<<w+100*j<<" - ZAJELO: "<<(double)(tomatoe_search.run()/1000000.0)<<" SEKUND"<<endl;
-                cout<<"\tNajlepsze:\n";
-                cout<<"\t"<<tomatoe_search.get_count()<<" dla: "<<tomatoe_search.get_location().first<<", "<<tomatoe_search.get_location().second<<endl;
-                cout<<"\tDla wymiarow: "<<tomatoe_search.get_sizes().first<<", "<<tomatoe_search.get_sizes().second<<endl;
+                current_theory = ((k+(i*step))*tomatoe_search.get_sizes().first*tomatoe_search.get_sizes().second);
+                double tmp = current_theory;
+                cout<<std::setprecision(10)<<n<<"\t"<<k+(i*step)<<"\t"<<tomatoe_search.get_sizes().first<<"\t"<<tomatoe_search.get_sizes().second<<"\t"<<duration<<"\t";
+                current_real = duration/recent_real;
+                current_theory = current_theory/recent_theory;
+                cout<<std::setprecision(10)<<current_theory<<"\t "<<current_real<<"\t"<<current_theory/current_real<<endl;
+                //printf("%6d %6d %6d %6d %10.3lf %10ld %6.3lf %6.3lf %6.3lf",n,k+(i*step),tomatoe_search.get_sizes().first,tomatoe_search.get_sizes().second,duration,tmp,current_theory,current_real,current_theory/current_real);
+                recent_real=duration;
+                recent_theory=tmp;
             }
+            cout<<endl;
         }
     }
     else

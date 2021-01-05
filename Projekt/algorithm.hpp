@@ -107,7 +107,6 @@ std::chrono::microseconds Algorithm::run_instance()
 
         //przechodzimy po sasiedztwie punktu roboczego
         // zlozonosc * h
-        // a wlasciwie to *2h-1
         for(int j=max(i->first-(h-1), 0); j<min(i->first+h, n); j++)
         {
             int len=0;
@@ -171,8 +170,11 @@ auto Algorithm::run()
 {
     best_sum=0;
     auto duration = run_instance().count();
-    swap_h_w();
-    duration +=run_instance().count();
+    if(h!=w)
+    {
+        swap_h_w();
+        duration +=run_instance().count();
+    }
     return duration;
 }
 
