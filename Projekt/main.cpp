@@ -26,7 +26,6 @@ int handle_argc(int argv, char **argc)
     //          m1 = podajemy standardowe wejscie i wywalamy na stdout
     if(regex_search(arguments,match,regex("-m1")))
     {
-        cout<<"znaleziono -m1\n";
         int h,k,n,w;
         cin>>h;
         cin>>w;
@@ -46,9 +45,13 @@ int handle_argc(int argv, char **argc)
         if(regex_search(arguments,match,regex("-w(\\d{1,6})")))
             w=atoi(match.str(1).c_str());
 
-        Algorithm tomatoe_search(k,n,h,w);
+        Algorithm tomatoe_search(n,k,h,w);
         tomatoe_search.set_field(field);
-        tomatoe_search.run();
+        cout<<"ZAJELO: "<<(double)(tomatoe_search.run()/1000000.0)<<" SEKUND"<<endl;
+        cout<<"najlepsze:\n";
+        cout<<tomatoe_search.get_count()<<" dla: "<<tomatoe_search.get_location().first<<", "<<tomatoe_search.get_location().second<<endl;
+        cout<<"Dla wymiarow: "<<tomatoe_search.get_sizes().first<<", "<<tomatoe_search.get_sizes().second<<endl;
+        
         return 0;
     }
 
@@ -86,7 +89,7 @@ int handle_argc(int argv, char **argc)
         //jezeli mamy wiecej pomidorkow niz pomiesci nasze pole
         // albo plachte wieksza niz nasze pole
         // albo plachta badz pole ma jakis wymiar rowny zero
-        if(k>(n*n) || h>n || w>n || n<=0 || h<=0 || w<=0)
+        if( h>n || w>n || n<=0 || h<=0 || w<=0)
         {
             cerr<<"BLENDE DANE!\n";
             return -1;
@@ -96,7 +99,10 @@ int handle_argc(int argv, char **argc)
         generator.generate();
         Algorithm tomatoe_search(k,n,h,w);
         tomatoe_search.set_field(generator.get_field());
-        cout<<"ZAJELO: "<<(double)(tomatoe_search.run().count()/1000000.0)<<" SEKUND"<<endl;
+        cout<<"ZAJELO: "<<(double)(tomatoe_search.run()/1000000.0)<<" SEKUND"<<endl;
+        cout<<"najlepsze:\n";
+        cout<<tomatoe_search.get_count()<<" dla: "<<tomatoe_search.get_location().first<<", "<<tomatoe_search.get_location().second<<endl;
+        cout<<"Dla wymiarow: "<<tomatoe_search.get_sizes().first<<", "<<tomatoe_search.get_sizes().second<<endl;
         return 0;        
     }
     //          m3 = przeprowadzamy benchmark
@@ -189,8 +195,12 @@ int handle_argc(int argv, char **argc)
             {
                 //pobieramy wspolrzedne pomidorkow wszystkich z genertatora (generujemy)
                 tomatoe_search.set_field(gen.generate());
+                tomatoe_search.set_sheet(h+100*j,w+100*j);
                 //odpalamy alg 
-                cout<<j<<"-ta iteracja - ZAJELO: "<<(double)(tomatoe_search.run().count()/1000000.0)<<" SEKUND"<<endl;
+                cout<<j<<"-ta iteracja. h = "<<h+100*j<<", w = "<<w+100*j<<" - ZAJELO: "<<(double)(tomatoe_search.run()/1000000.0)<<" SEKUND"<<endl;
+                cout<<"\tNajlepsze:\n";
+                cout<<"\t"<<tomatoe_search.get_count()<<" dla: "<<tomatoe_search.get_location().first<<", "<<tomatoe_search.get_location().second<<endl;
+                cout<<"\tDla wymiarow: "<<tomatoe_search.get_sizes().first<<", "<<tomatoe_search.get_sizes().second<<endl;
             }
         }
     }

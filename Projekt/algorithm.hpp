@@ -14,38 +14,60 @@ private:
     int n;
     int h;
     int w;
+    int best_sum;
+    pair<int,int> bestloc;
+    pair<int,int> h_w_order;
     Generator::field_type field;
     int max(int a,int b);
     int min(int a, int b);
+    std::chrono::microseconds run_instance();
+    void swap_h_w();
 public:
     Algorithm(int k, int n, int h, int w);
     void set_field(Generator::field_type field);
-    auto run();
+    void set_sheet(int h, int w);
     void setparams(int n, int k, int h, int w);
     void setparams(int k, int h, int w);
+    auto run();
+    //wydobywacze
+    pair<int,int> get_location();
+    pair<int,int> get_sizes();
+    int get_count();
 };
 
-Algorithm::max(int a, int b)
+int Algorithm::max(int a, int b)
 {
     if(a>b)
         return a;
     return b;
 }
-Algorithm::min(int a, int b)
+int Algorithm::min(int a, int b)
 {
     if(a<b)
         return a;
     return b;
 }
-
-
+void Algorithm::swap_h_w()
+{
+    int tmp=h;
+    h=w;
+    w=tmp;
+}
 Algorithm::Algorithm(int n, int k, int h, int w) : k(k), h(h), w(w), n(n)
-{}
-
+{
+    best_sum=0;
+}
 
 void Algorithm::set_field(Generator::field_type field)
 {
     this->field = field;
+}
+
+void Algorithm::set_sheet(int h, int w)
+
+{
+    this->h = h;
+    this->w = w;
 }
 
 void Algorithm::setparams(int n, int k, int h, int w)
@@ -62,24 +84,30 @@ void Algorithm::setparams(int k, int h, int w)
     this->h=h;
 }
 
-auto Algorithm::run()
+std::chrono::microseconds Algorithm::run_instance()
 {
-    map<uint16_t,vector<uint16_t>> nzpd;
+    map<int,vector<int>> nzpd;
     //wrzucamy do wektora wszystkie
     for(auto i = field.begin(); i != field.end(); i++)
         nzpd[i->first].push_back(i->second);
 
-    pair<uint16_t,uint16_t> maxloc;
+    pair<int,int> maxloc;
     int maxsum=0;
 
     auto start = high_resolution_clock::now();
 
+    //przechodzimy po kazdym z punktow
+    // zlozonosc * k
     for(auto i = field.begin(); i != field.end(); i++)
     {
-        vector<uint16_t> pointsright;
+        vector<int> pointsdown;
         //16
-        pointsright.resize(n);
+        pointsdown.resize(n);
 
+
+        //przechodzimy po sasiedztwie punktu roboczego
+        // zlozonosc * h
+        // a wlasciwie to *2h-1
         for(int j=max(i->first-(h-1), 0); j<min(i->first+h, n); j++)
         {
             int len=0;
@@ -90,31 +118,31 @@ auto Algorithm::run()
             }
             else
             {
+                //przechodzimy w dol po kazdym z punktow
+                //pesymistycznie przejdziemy w razy
+                // zlozonosc *w
                 for(int k=0; k<nzpd[j].size(); k++)
                 {
-                    if((i->second <= nzpd[j].at(k)) && (nzpd[j].at(k) <= (i->second+(w-1))))
+                    if((i->second <= nzpd[j].at(k)) && (nzpd[j].at(k) <= (i->second+w)))
                     {
                         len++;
                     }
                 }
             }
-            pointsright[j] = len;
+            pointsdown[j] = len;
         }
-        //22
         for(int j = (1-h); j<h; j++)
         {
             int sum=0;
-            int count=0;
-            for(int k = max(i->first+j,0); k<min(i->first+j+h,n); k++)
+            for(int k = max(i->first+j,0); k<min(i->first+j+h+1,n); k++)
             {
-                sum+=pointsright.at(k);
-                count++;
+                sum+=pointsdown.at(k);
             }
 
             if(sum>maxsum)
             {
                 maxsum=sum;
-                maxloc.first=i->first;
+                maxloc.first=i->first+j;
                 maxloc.second=i->second;
             }
         }
@@ -123,11 +151,44 @@ auto Algorithm::run()
         maxloc.first = min(n-h,maxloc.first);
         maxloc.second = min(n-w,maxloc.second);
     }
+
+    //jezeli dane wykonanie dało najlepszy wynik to zapisz ten wynik
+    //przyda się on później kiedy będziemy chcieli wydobyć najlepszy wynik
+    if(maxsum>best_sum)
+    {
+        best_sum=maxsum;
+        bestloc.first=maxloc.first;
+        bestloc.second=maxloc.second;
+        h_w_order.first=h;
+        h_w_order.second=w;
+    }
     auto stop = high_resolution_clock::now();
-    cout<<"\nZnaleziono max dla: "<<maxloc.first<<","<<maxloc.second<<" i  wynosi: "<<maxsum<<endl;
     auto duration = duration_cast<microseconds>(stop-start);
     return duration;
 }
 
+auto Algorithm::run()
+{
+    best_sum=0;
+    auto duration = run_instance().count();
+    swap_h_w();
+    duration +=run_instance().count();
+    return duration;
+}
+
+pair<int,int> Algorithm::get_location()
+{
+    return bestloc;
+}
+
+pair<int,int> Algorithm::get_sizes()
+{
+    return h_w_order;
+}
+
+int Algorithm::get_count()
+{
+    return best_sum;
+}
 
 #endif
