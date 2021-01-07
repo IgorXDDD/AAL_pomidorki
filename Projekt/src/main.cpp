@@ -1,12 +1,18 @@
-#include "algorithm.hpp"
+#include <iostream>
+
 #include <regex>
 #include <iomanip>
 #include <cstdio>
+#include "../include/algorithm.hpp"
+#include "../include/generator.hpp"
 
+
+#define FIELD_SIZE 60000
+#define MAX_TOMATOE_COUNT 15000
+#define MAX_HEIGHT_WIDTH 10000
 
 using namespace std;
 
-void switch_scenario(int scenario);
 int handle_argc(int argv, char **argc);
 
 int main(int argv, char* argc[])
@@ -28,18 +34,18 @@ int handle_argc(int argv, char **argc)
     //          m1 = podajemy standardowe wejscie i wywalamy na stdout
     if(regex_search(arguments,match,regex("-m1")))
     {
-        int h,k,n,w;
+    	uint32_t h,k,n,w;
         cin>>h;
         cin>>w;
         cin>>n;
         cin>>k;
-        int x,y;
-        Generator::field_type field;
-        for(int i=0;i<k;i++)
+        uint32_t x,y;
+        Field field;
+        for(uint32_t i=0;i<k;i++)
         {
             cin>>x;
             cin>>y;
-            field.push_back(make_pair(x,y));
+            field.add(make_pair(x,y));
         }
         // moze jeszcze byc taka sytuacja ze uzytkownik wybiera wlasne h oraz w
         if(regex_search(arguments,match,regex("-h(\\d{1,6})")))
@@ -47,7 +53,7 @@ int handle_argc(int argv, char **argc)
         if(regex_search(arguments,match,regex("-w(\\d{1,6})")))
             w=atoi(match.str(1).c_str());
 
-        Algorithm tomatoe_search(n,k,h,w);
+        Algorithm tomatoe_search(k,h,w);
         tomatoe_search.set_field(field);
         cout<<"ZAJELO: "<<(double)(tomatoe_search.run()/1000000.0)<<" SEKUND"<<endl;
         cout<<"najlepsze:\n";
@@ -62,7 +68,7 @@ int handle_argc(int argv, char **argc)
     else if (regex_search(arguments,match,regex("-m2")))
     {
         bool all_data_found=true;
-        int h,w,n,k;
+        uint32_t h,w,n,k;
         n=FIELD_SIZE;
         if(regex_search(arguments,match,regex("-k(\\d{1,6})")))
             k=atoi(match.str(1).c_str());
@@ -99,7 +105,7 @@ int handle_argc(int argv, char **argc)
 
         Generator generator(n,k);
         generator.generate();
-        Algorithm tomatoe_search(k,n,h,w);
+        Algorithm tomatoe_search(k,h,w);
         tomatoe_search.set_field(generator.get_field());
         cout<<"ZAJELO: "<<(double)(tomatoe_search.run()/1000000.0)<<" SEKUND"<<endl;
         cout<<"najlepsze:\n";
@@ -117,7 +123,7 @@ int handle_argc(int argv, char **argc)
     // n = rozmiar pola (najlepiej nie podawac)
     else if (regex_search(arguments,match,regex("-m3")))
     {
-        int step,r,c,n,k,h,w;
+    	uint32_t step,r,c,n,k,h,w;
         n=FIELD_SIZE;
         bool all_data_found=true;
         if(regex_search(arguments,match,regex("-k(\\d{1,6})")))
@@ -178,7 +184,7 @@ int handle_argc(int argv, char **argc)
             c=1;
         if(step<0)
             step=0;
-        Algorithm tomatoe_search(n,k,h,w);
+        Algorithm tomatoe_search(k,h,w);
         Generator gen(n,k);
 
 
@@ -188,7 +194,7 @@ int handle_argc(int argv, char **argc)
         
         
         //cout<<"n\tk\th\tw\tczas\tzloz\t\tcz_f\tzl_f\n";
-        for(int i=0; i<r; i++)
+        for(uint32_t i=0; i<r; i++)
         {
             if(k+(i*step)>MAX_TOMATOE_COUNT)
             {
@@ -198,16 +204,21 @@ int handle_argc(int argv, char **argc)
             //ustawiamy w generatorze ile ma byc pomidorkow
             gen.set_tomatoes_count(k+(i*step));
             //algorytmowi tez mowimy ile jest pomidorkow
-            tomatoe_search.setparams(k+(i*step),h,w);
+//            tomatoe_search.setparams(k+(i*step),h,w);
+            tomatoe_search.set_n_tomatoes(k+(i*step));
+            tomatoe_search.set_sheet_height(h);
+            tomatoe_search.set_sheet_width(w);
             double recent_real =1.0;
             double current_real =1.0;
             double current_theory =1.0;
             double recent_theory =(k+(i*step))*h*w;
-            for(int j=0; j<c; j++)
+            for(uint32_t j=0; j<c; j++)
             {
                 //pobieramy wspolrzedne pomidorkow wszystkich z genertatora (generujemy)
                 tomatoe_search.set_field(gen.generate());
-                tomatoe_search.set_sheet( (h+100*j)>n?n:(h+100*j), (w+100*j)>n?n:(w+100*j));
+                tomatoe_search.set_sheet_height((h+100*j)>n?n:(h+100*j));
+                tomatoe_search.set_sheet_width((w+100*j)>n?n:(w+100*j));
+//                tomatoe_search.set_sheet( (h+100*j)>n?n:(h+100*j), (w+100*j)>n?n:(w+100*j));
                 double duration = (double)(tomatoe_search.run()/1000000.0);
                 
                 //odpalamy alg 
@@ -228,5 +239,5 @@ int handle_argc(int argv, char **argc)
     {
         cout<<"NIE ZNALEZIONO\n";
     }
-    
+    return 0;
 }
