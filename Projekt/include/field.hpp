@@ -1,10 +1,3 @@
-/*
- * field.hpp
- *
- *
- *      Author: bartlomiej
- */
-
 #ifndef FIELD_HPP_
 #define FIELD_HPP_
 
@@ -18,7 +11,7 @@ private:
 	typedef std::pair<uint32_t,uint32_t> tomato;
 	std::vector<tomato> field;
 	static const uint32_t MINIMAL_COORDINATE = 0;
-	static const uint32_t MAXIMAL_COORDINATE = 60000;
+	uint32_t MAXIMAL_COORDINATE =60000;
 
 public:
 
@@ -42,10 +35,12 @@ public:
     uint32_t min_coord(){ return MINIMAL_COORDINATE; }
     uint32_t max_coord(){ return MAXIMAL_COORDINATE; }
     void add(tomato tomato){ field.push_back(tomato); }
+    void set_size(uint32_t n) {MAXIMAL_COORDINATE=n; }
     std::vector<tomato>::const_iterator begin() const { return field.begin(); }
 	std::vector<tomato>::iterator begin(){ return field.begin(); }
 	std::vector<tomato>::const_iterator end() const { return field.end(); }
 	std::vector<tomato>::iterator end(){ return field.end(); }
+
 };
 
 

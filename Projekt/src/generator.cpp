@@ -1,7 +1,7 @@
-#include "../include/generator.hpp"
-
+#include "generator.hpp"
 #include <ctime>
 #include <iostream>
+#include <cstdlib>
 
 
 Field Generator::generate()
@@ -47,10 +47,10 @@ void Generator::print_cords()
 
 void Generator::print_to_std()
 {
-    std::cout<<field_size<<" "<<tomatoes_count<<std::endl;
+    std::cout<<field_size<<"\t"<<tomatoes_count<<std::endl;
     for(auto i = field.begin();i!=field.end();i++)
     {
-        std::cout<<i->first<<" "<<i->second<<"\n";
+        std::cout<<i->first<<"\t"<<i->second<<"\n";
     }
 }
 

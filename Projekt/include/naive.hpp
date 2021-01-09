@@ -1,10 +1,3 @@
-/*
- * naive.hpp
- *
- *  Created on: Jan 7, 2021
- *      Author: bartlomiej
- */
-
 #ifndef NAIVE_HPP_
 #define NAIVE_HPP_
 

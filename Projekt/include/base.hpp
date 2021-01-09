@@ -17,7 +17,7 @@ using namespace std::chrono;
 class BaseAlgorithm
 {
 protected:
-	uint32_t n_tomatoes, sheet_height, sheet_width, best_sum;
+	int n_tomatoes, sheet_height, sheet_width, best_sum;
     pair<uint32_t,uint32_t> bestloc;
     pair<uint32_t,uint32_t> h_w_order;
     Field field;

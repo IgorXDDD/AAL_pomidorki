@@ -13,7 +13,4 @@ public:
     long run();
 };
 
-
-
-
 #endif

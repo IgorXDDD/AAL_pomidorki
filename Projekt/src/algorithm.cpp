@@ -4,10 +4,11 @@
  *  Created on: Jan 7, 2021
  *      Author: bartlomiej
  */
-#include "../include/algorithm.hpp"
+#include "algorithm.hpp"
 
 #include <map>
 #include <chrono>
+
 
 std::chrono::microseconds Algorithm::run_instance()
 {
@@ -23,34 +24,33 @@ std::chrono::microseconds Algorithm::run_instance()
 
     //przechodzimy po kazdym z punktow
     // zlozonosc * k
-    for(auto tomato = field.begin(); tomato != field.end(); ++tomato)
+    for(auto tomato = field.begin(); tomato != field.end(); tomato++)
     {
         vector<uint32_t> pointsdown;
-        //16
         pointsdown.resize(field.max_coord());
-
 
         //przechodzimy po sasiedztwie punktu roboczego
         // zlozonosc * h
-        for(uint32_t coord_x = max(tomato->first-(sheet_width-1), field.min_coord()); coord_x < min(tomato->first + sheet_width, field.max_coord()); ++coord_x)
+        for(int coord_x = max((int)(tomato->first)-(sheet_width-1), (int)field.min_coord()); coord_x < min(tomato->first + sheet_width, field.max_coord()); ++coord_x)
         {
-        	uint32_t tomatoes_covered = 0;
+            uint32_t tomatoes_covered = 0;
             if(potentially_covered.find(coord_x) != potentially_covered.end())
             {
-            	for(uint32_t k = 0; k<potentially_covered[coord_x].size(); k++)
+            	for(int k = 0; k<potentially_covered[coord_x].size(); k++)
 					{
-						if((tomato->second <= potentially_covered[coord_x].at(k)) && (potentially_covered[coord_x].at(k) <= (tomato->second + sheet_width)))
+						if((tomato->second <= potentially_covered[coord_x].at(k)) && (potentially_covered[coord_x].at(k) <= (tomato->second + sheet_height)))
 						{
-							++tomatoes_covered;
+							tomatoes_covered++;
 						}
 				}
             }
             pointsdown[coord_x] = tomatoes_covered;
         }
-        for(uint32_t coord_x = (1 - sheet_width); coord_x < sheet_width; ++coord_x)
+
+        for(int coord_x = (1 - (int)sheet_width); coord_x < (int)sheet_width; ++coord_x)
         {
         	uint32_t sum = 0;
-            for(uint32_t k = max(tomato->first + coord_x, field.min_coord()); k < min(tomato->first + coord_x + sheet_width + 1, field.max_coord()); ++k)
+            for(int k = max(tomato->first + coord_x, field.min_coord()); k < min(tomato->first + coord_x + sheet_width + 1, field.max_coord()); ++k)
             {
                 sum+=pointsdown.at(k);
             }
@@ -63,8 +63,9 @@ std::chrono::microseconds Algorithm::run_instance()
         }
 
         //korekta jezeli poza granicami
-        best_coords.first = min(field.max_coord() - sheet_width, best_coords.first);
-        best_coords.second = min(field.max_coord() - sheet_height, best_coords.second);
+        best_coords.first = min(field.max_coord() - sheet_width-1, best_coords.first);
+        best_coords.second = min(field.max_coord() - sheet_height-1, best_coords.second);
+
     }
 
     //jezeli dane wykonanie dało najlepszy wynik to zapisz ten wynik
@@ -74,8 +75,8 @@ std::chrono::microseconds Algorithm::run_instance()
         best_sum = maxsum;
         bestloc.first = best_coords.first;
         bestloc.second = best_coords.second;
-        h_w_order.first = sheet_height;
-        h_w_order.second = sheet_width;
+        h_w_order.first = sheet_width;
+        h_w_order.second = sheet_height;
     }
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(stop-start);
