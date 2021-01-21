@@ -158,6 +158,7 @@ int scenario_m3(string arguments)
 {
     smatch match;
     int step,r,c,n,k,h,w;
+    bool h_w_inc=false;
     n=FIELD_SIZE;
     bool all_data_found=true;
     if(regex_search(arguments,match,regex("-k(\\d{1,6})")))
@@ -192,6 +193,9 @@ int scenario_m3(string arguments)
     //dla n nie jest istotne zeby znalezc, powinnismy uzyc domyslnego n=60000
     if(regex_search(arguments,match,regex("-n(\\d{1,6})")))
         n=atoi(match.str(1).c_str());
+
+    if(regex_search(arguments,match,regex("-hwi")))
+        h_w_inc= true;
     
     if(!all_data_found)
     {
@@ -227,30 +231,36 @@ int scenario_m3(string arguments)
     {
         //ustawiamy w generatorze ile ma byc pomidorkow
         int k_update;
-        int h_update;
-        int w_update;
+        int h_update=h;
+        int w_update=w;
 
         if(k+(i*step)>MAX_TOMATOE_COUNT)
             k_update=MAX_TOMATOE_COUNT;
         else
             k_update = k+(i*step);
 
-        if(h+(i*step)>MAX_HEIGHT_WIDTH)
-            h_update=MAX_HEIGHT_WIDTH;
-        else
-            h_update = h+(i*step);
+        if(h_w_inc)
+        {
+            if (h + (i * step) > MAX_HEIGHT_WIDTH)
+                h_update = MAX_HEIGHT_WIDTH;
+            else
+                h_update = h + (i * step);
 
-        if(w+(i*step)>MAX_HEIGHT_WIDTH)
-            w_update=MAX_HEIGHT_WIDTH;
-        else
-            w_update = w+(i*step);
+            if (w + (i * step) > MAX_HEIGHT_WIDTH)
+                w_update = MAX_HEIGHT_WIDTH;
+            else
+                w_update = w + (i * step);
+        }
     
         
         //pole teraz ma wiecej pomidorkow
         gen.set_tomatoes_count(k_update);
         tomatoe_search.set_n_tomatoes(k_update);
-        tomatoe_search.set_sheet_height(h_update);
-        tomatoe_search.set_sheet_width(w_update);
+        if(h_w_inc)
+        {
+            tomatoe_search.set_sheet_height(h_update);
+            tomatoe_search.set_sheet_width(w_update);
+        }
 
         double average_time=0.0;
         for(int j=0; j<c; j++)
@@ -262,9 +272,9 @@ int scenario_m3(string arguments)
         duration_times.push_back(average_time/c);
         // normalizacja, nie chcemy dostac ogromnego wspolczynnika
         double a,b,c;
-        a=k_update/1000.0;
-        b=h_update/1000.0;
-        c=w_update/1000.0;
+        a=k_update/100.0;
+        b=h_update/100.0;
+        c=w_update/100.0;
 
         instance_sizes.push_back(a*a*max(b,c));
         // cout<<a<<" "<<b<<" "<<c<<endl;
@@ -273,7 +283,8 @@ int scenario_m3(string arguments)
     }
 
     double coefficient = duration_times.at(r/2)/instance_sizes.at(r/2);
-    cout<<"WSPOLCZYNNIK = "<<coefficient<<endl;
+    cout<<"WSPOLCZYNNIK C = "<<coefficient<<endl;
+    cout<<"size = k*k*max(h,w)/1000000\n\n";
     cout<<"size\tt(size)[ms]\tq(size)\n";
     for(int i = 0; i<duration_times.size(); i++)
     {
@@ -336,7 +347,7 @@ int scenario_m4(string arguments)
     cout<<"\tWymiary plachty: "<<tomatoe_search.get_sizes().first<<" x "<<tomatoe_search.get_sizes().second<<endl;
 
     cout<<"\n\n\tNaiwny algorytm znalazl w: "<<naive_search.run()/1000000.0<<" sekund"<<endl;
-    cout<<"\tnajlepszy naiwny wynik:\n";
+    cout<<"\tnajlepszy wynik:\n";
     cout<<"\t"<<naive_search.get_count()<<" krzakow przykrytych dla punktu: ("<<naive_search.get_location().first<<", "<<naive_search.get_location().second<<")"<<endl;
     cout<<"\tWymiary plachty: "<<naive_search.get_sizes().first<<" x "<<naive_search.get_sizes().second<<endl;
 

@@ -7,12 +7,11 @@ class Generator
 {
 
 private:
-    int field_size;
     int tomatoes_count;
     Field field;
 
 public:
-    Generator(int size, int count): field_size(size), tomatoes_count(count) {field.set_size(size);}
+    Generator(int size, int count): tomatoes_count(count) {field.set_size(size);}
     void set_tomatoes_count(int count){ this->tomatoes_count = count; }
     Field generate();
     Field get_field(){ return field; }
@@ -22,3 +21,4 @@ public:
 };
 
 #endif
+

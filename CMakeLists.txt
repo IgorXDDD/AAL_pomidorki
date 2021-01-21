@@ -15,3 +15,19 @@ add_executable(AAL_pomidorki
         Projekt/src/generator.cpp
         Projekt/src/main.cpp
         Projekt/src/naive.cpp)
+
+project(AAL_generator)
+
+set(CMAKE_CXX_STANDARD 14)
+
+include_directories(Projekt/include)
+
+add_executable(AAL_generator
+        Projekt/include/field.hpp
+        Projekt/include/generator.hpp
+        Projekt/src/generator.cpp
+        Projekt/src/externalGenerator.cpp
+
+)
+
+

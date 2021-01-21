@@ -2,6 +2,8 @@
 #include <ctime>
 #include <iostream>
 #include <cstdlib>
+#include <regex>
+
 
 
 Field Generator::generate()
@@ -12,17 +14,17 @@ Field Generator::generate()
 	uint32_t tomato_x,tomato_y;
 	while (k>0)
 	{
-		if(field_size > RAND_MAX)
+		if(field.max_coord() > RAND_MAX)
 		{
-			tomato_x = rand() %(field_size-RAND_MAX-1);
+			tomato_x = rand() %(field.max_coord()-RAND_MAX-1);
 			tomato_x += rand() %RAND_MAX-1;
-			tomato_y = rand() %(field_size-RAND_MAX-1);
+			tomato_y = rand() %(field.max_coord()-RAND_MAX-1);
 			tomato_y += rand() %RAND_MAX-1;
 		}
 		else
 		{
-			tomato_x = rand() %field_size;
-			tomato_y = rand() %field_size;
+			tomato_x = rand() %field.max_coord();
+			tomato_y = rand() %field.max_coord();
 		}
 		if(!field.is_occupied(tomato_x, tomato_y))
 		{
@@ -47,10 +49,11 @@ void Generator::print_cords()
 
 void Generator::print_to_std()
 {
-    std::cout<<field_size<<"\t"<<tomatoes_count<<std::endl;
+    std::cout<<field.max_coord()<<"\t"<<tomatoes_count<<std::endl;
     for(auto i = field.begin();i!=field.end();i++)
     {
         std::cout<<i->first<<"\t"<<i->second<<"\n";
     }
 }
+
 

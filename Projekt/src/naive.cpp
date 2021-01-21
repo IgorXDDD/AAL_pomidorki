@@ -53,15 +53,19 @@ long NaiveAlgorithm::run()
 {
     best_sum = 0;
     auto duration = run_instance().count();
-    if(h_w_order.first!=h_w_order.second)
+    if(sheet_height != sheet_width)
     {
-        uint32_t tmp=0;
-        tmp = sheet_height;
-        sheet_height=sheet_width;
-        sheet_width=tmp;
+        swap_h_w();
+        duration += run_instance().count();
     }
-    duration+= run_instance().count();
     return duration;
 }
 
+
+void NaiveAlgorithm::swap_h_w()
+{
+    uint32_t tmp = sheet_height;
+    sheet_height = sheet_width;
+    sheet_width = tmp;
+}
 
